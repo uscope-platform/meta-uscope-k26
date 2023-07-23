@@ -1,0 +1,8 @@
+/ {
+    uScope@fffc0000 {
+        compatible = "ucube_lkm";
+        reg = <0xfffc0000 0x8000>;
+        interrupts = <0x00 0x1d 0x01>;
+        interrupt-parent = <0x04>;
+    };
+};
