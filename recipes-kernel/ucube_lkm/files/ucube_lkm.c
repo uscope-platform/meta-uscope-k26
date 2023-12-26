@@ -391,27 +391,33 @@ static void __exit ucube_lkm_exit(void) {
 
 int ucube_lkm_probe(struct platform_device *pdev){
     int rc;
+	char const * driver_mode;
+    struct device_node *local_node;
+
     pr_info("%s: In platform probe\n", __func__);
     
     irq_line = platform_get_irq(pdev, 0);
 
+    of_property_read_string(pdev->dev.of_node, "ucubever", &driver_mode);
 
-    rc = sysfs_create_group(&pdev->dev.kobj, &uscope_lkm_attr_group);
-
-    /* GET HANDLES TO CLOCK STRUCTURES */
-    dev_data->fclk[0] = devm_clk_get(&pdev->dev, "fclk0");
-    dev_data->fclk[1] = devm_clk_get(&pdev->dev, "fclk1");
-    dev_data->fclk[2] = devm_clk_get(&pdev->dev, "fclk2");
-    dev_data->fclk[3] = devm_clk_get(&pdev->dev, "fclk3");
-    clk_prepare_enable(dev_data->fclk[0]);
-    clk_prepare_enable(dev_data->fclk[1]);
-    clk_prepare_enable(dev_data->fclk[2]);
-    clk_prepare_enable(dev_data->fclk[3]);
-    
-    clk_set_rate(dev_data->fclk[0], FCLK_0_DEFAULT_FREQ);
-    clk_set_rate(dev_data->fclk[1], FCLK_1_DEFAULT_FREQ);
-    clk_set_rate(dev_data->fclk[2], FCLK_2_DEFAULT_FREQ);
-    clk_set_rate(dev_data->fclk[3], FCLK_3_DEFAULT_FREQ);
+    pr_info("%s: driver target is %s\n", __func__, driver_mode);
+    if(strncmp(driver_mode, "zynq", 6)==0){
+        rc = sysfs_create_group(&pdev->dev.kobj, &uscope_lkm_attr_group);\
+        /* GET HANDLES TO CLOCK STRUCTURES */
+        dev_data->fclk[0] = devm_clk_get(&pdev->dev, "fclk0");
+        dev_data->fclk[1] = devm_clk_get(&pdev->dev, "fclk1");
+        dev_data->fclk[2] = devm_clk_get(&pdev->dev, "fclk2");
+        dev_data->fclk[3] = devm_clk_get(&pdev->dev, "fclk3");
+        clk_prepare_enable(dev_data->fclk[0]);
+        clk_prepare_enable(dev_data->fclk[1]);
+        clk_prepare_enable(dev_data->fclk[2]);
+        clk_prepare_enable(dev_data->fclk[3]);
+        
+        clk_set_rate(dev_data->fclk[0], FCLK_0_DEFAULT_FREQ);
+        clk_set_rate(dev_data->fclk[1], FCLK_1_DEFAULT_FREQ);
+        clk_set_rate(dev_data->fclk[2], FCLK_2_DEFAULT_FREQ);
+        clk_set_rate(dev_data->fclk[3], FCLK_3_DEFAULT_FREQ);
+    }
 
     return 0;
 }
