@@ -6,4 +6,11 @@
         interrupt-parent = <&gic>;
         ucubever = "zynqmp";
     };
+    debug_bridge@a0000000 {
+        compatible = "xlnx,xvc";
+        reg = <0x0 0xa0000000 0x0 0x10000>;
+        clocks = <&zynqmp_clk 71>;
+        status = "okay";
+        clock-names = "s_axi_aclk";
+    };
 };
