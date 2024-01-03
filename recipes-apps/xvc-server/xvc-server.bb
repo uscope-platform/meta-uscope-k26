@@ -25,3 +25,8 @@ do_install() {
 
 FILES_${PN} = "${bindir}/xvc-server"
 TARGET_CC_ARCH += "${LDFLAGS}"
+
+inherit useradd
+
+USERADD_PACKAGES = "${PN}"
+GROUPADD_PARAM:${PN} = "-g 1005 xvc"

@@ -13,3 +13,8 @@ SRC_URI = "file://Makefile \
 S = "${WORKDIR}"
 
 RPROVIDES:${PN} += "ucube_lkm"
+
+inherit useradd
+
+USERADD_PACKAGES = "${PN}"
+GROUPADD_PARAM:${PN} = "-g 1006 uscope"
