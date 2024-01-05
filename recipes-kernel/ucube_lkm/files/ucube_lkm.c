@@ -27,11 +27,21 @@
 
 #define IOCTL_NEW_DATA_AVAILABLE 1
 
-#define BUS_0_ADDRESS_BASE 0x40000000
-#define BUS_0_ADDRESS_TOP 0x7fffffff
 
-#define BUS_1_ADDRESS_BASE 0x80000000
-#define BUS_1_ADDRESS_TOP 0xBfffffff
+
+#define ZYNQ_BUS_0_ADDRESS_BASE 0x40000000
+#define ZYNQ_BUS_0_ADDRESS_TOP 0x7fffffff
+
+#define ZYNQ_BUS_1_ADDRESS_BASE 0x80000000
+#define ZYNQ_BUS_1_ADDRESS_TOP 0xBfffffff
+
+#define ZYNQMP_BUS_0_ADDRESS_BASE 0x400000000
+#define ZYNQMP_BUS_0_ADDRESS_TOP  0x4FFFFFFFF
+
+#define ZYNQMP_BUS_1_ADDRESS_BASE 0x500000000
+#define ZYNQMP_BUS_1_ADDRESS_TOP  0x5FFFFFFFF
+
+
 
 #define FCLK_0_DEFAULT_FREQ 100000000
 #define FCLK_1_DEFAULT_FREQ 40000000
@@ -65,6 +75,7 @@ struct scope_device_data {
     dma_addr_t physaddr;
     int new_data_available;
     struct clk *fclk[4];
+    bool is_zynqmp;    
 };
 
 
@@ -171,35 +182,57 @@ static __poll_t ucube_lkm_poll(struct file *flip , struct poll_table_struct * po
 
 
 static int ucube_lkm_mmap(struct file *filp, struct vm_area_struct *vma){
-
-    uint32_t mapping_start_address = vma->vm_pgoff*4096;
-    uint32_t mapping_stop_address = vma->vm_pgoff*4096+vma->vm_end - vma->vm_start;
+    uint64_t mapping_start_address = vma->vm_pgoff << PAGE_SHIFT;
+    uint32_t mapping_size = vma->vm_end - vma->vm_start;
+    uint64_t mapping_stop_address = mapping_start_address +  mapping_size;
 
     int minor = MINOR(filp->f_inode->i_rdev);
+    uint64_t mapping_limit_base_0, mapping_limit_top_0;
+    uint64_t mapping_limit_base_1, mapping_limit_top_1;
 
+    if(dev_data->is_zynqmp){
+        mapping_limit_base_0 = ZYNQMP_BUS_0_ADDRESS_BASE;
+        mapping_limit_top_0 = ZYNQMP_BUS_0_ADDRESS_TOP;
+        mapping_limit_base_1 = ZYNQMP_BUS_1_ADDRESS_BASE;
+        mapping_limit_top_1 = ZYNQMP_BUS_1_ADDRESS_TOP;
+    } else {
+        mapping_limit_base_0 = ZYNQ_BUS_0_ADDRESS_BASE;
+        mapping_limit_top_0 = ZYNQ_BUS_0_ADDRESS_TOP;
+        mapping_limit_base_1 = ZYNQ_BUS_1_ADDRESS_BASE;
+        mapping_limit_top_1 = ZYNQ_BUS_1_ADDRESS_TOP;
+    }
     switch (minor) {
         case 0:
             return -1;
             pr_err("%s: mmapping of data memory is not supported\n", __func__);
             break;
         case 1:
-            if( mapping_start_address < BUS_0_ADDRESS_BASE || mapping_stop_address > BUS_0_ADDRESS_TOP){
-                pr_err("%s: mapping out of bus 0 address range\n", __func__);
+            if( mapping_start_address < mapping_limit_base_0 ){
+                pr_err("%s: attempting to map memory below the control bus address range (%x)\n", __func__, mapping_start_address);
+                return -2;
+            }
+            if( mapping_stop_address > mapping_limit_top_0){
+                pr_err("%s: attempting to map memory above the control bus address range (%x)\n", __func__, mapping_stop_address);
                 return -2;
             }
             break;
         case 2:
-            if( mapping_start_address < BUS_1_ADDRESS_BASE || mapping_stop_address > BUS_1_ADDRESS_TOP){
-                pr_err("%s: mmapping out of bus 1 address range\n", __func__);
+            if( mapping_start_address < mapping_limit_base_1 ){
+                pr_err("%s: attempting to map memory below the core bus address range (%x)\n", __func__, mapping_start_address);
+                return -2;
+            }
+            if( mapping_stop_address > mapping_limit_top_1){
+                pr_err("%s: attempting to map memory above the core bus address range (%x)\n", __func__, mapping_stop_address);
                 return -2;
             }
             break;
     }
 
     vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-    pr_warn("%s: In mmapped from %x to %x\n", __func__, mapping_start_address,mapping_stop_address);
-    if (remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff,vma->vm_end - vma->vm_start,vma->vm_page_prot))
+    if (remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff, mapping_size ,vma->vm_page_prot))
     return -EAGAIN;
+
+    pr_info("%s: Mapped emmory from %llx to %llx\n", __func__, mapping_start_address, mapping_stop_address);
     return 0;
 }
 
@@ -401,7 +434,9 @@ int ucube_lkm_probe(struct platform_device *pdev){
     of_property_read_string(pdev->dev.of_node, "ucubever", &driver_mode);
 
     pr_info("%s: driver target is %s\n", __func__, driver_mode);
-    if(strncmp(driver_mode, "zynq", 6)==0){
+    dev_data->is_zynqmp = strncmp(driver_mode, "zynqmp", 6)==0;
+
+    if(!dev_data->is_zynqmp){
         rc = sysfs_create_group(&pdev->dev.kobj, &uscope_lkm_attr_group);\
         /* GET HANDLES TO CLOCK STRUCTURES */
         dev_data->fclk[0] = devm_clk_get(&pdev->dev, "fclk0");
