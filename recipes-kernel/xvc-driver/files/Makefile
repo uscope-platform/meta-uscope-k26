@@ -1,19 +1,22 @@
-obj-m := xvc-driver.o
-xvc-driver-objs := xvc_driver.o xvc_driver_base.o
+DRIVER := xilinx_xvc_driver
 
-MY_CFLAGS += -g -DDEBUG
-ccflags-y += ${MY_CFLAGS}
+ccflags-y := -DLOG_PREFIX=\"$(DRIVER):\ \"
+$(DRIVER)-y := \
+	xvc_driver_base.o \
+	xvc_driver.o
+
+obj-m += $(DRIVER).o
 
 SRC := $(shell pwd)
 
-all:
-	$(MAKE) -C $(KERNEL_SRC) M=$(SRC)
+modules:
+	$(MAKE) -C $(KERNEL_SRC) M=$(SRC) modules
 
 modules_install:
 	$(MAKE) -C $(KERNEL_SRC) M=$(SRC) modules_install
 
+.PHONY: clean
 clean:
 	rm -f *.o *~ core .depend .*.cmd *.ko *.mod.c
 	rm -f Module.markers Module.symvers modules.order
 	rm -rf .tmp_versions Modules.symvers
-

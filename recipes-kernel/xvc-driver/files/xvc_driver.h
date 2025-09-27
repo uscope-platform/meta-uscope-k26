@@ -23,8 +23,6 @@
 #include "xvc_ioctl.h"
 #include "xvc_user_config.h"
 
-#define LOG_PREFIX
-
 #ifndef _XVC_USER_CONFIG_H
 #define XVC_DRIVER_NAME "xilinx_xvc_driver"
 #define DEBUG_BRIDGE_COMPAT_STRING "xlnx,xvc"

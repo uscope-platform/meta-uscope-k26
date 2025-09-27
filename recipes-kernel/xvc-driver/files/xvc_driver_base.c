@@ -33,6 +33,10 @@
 #include "xvc_driver.h"
 #include "xvc_user_config.h"
 
+MODULE_LICENSE("GPL v2");
+MODULE_AUTHOR("Max Heimer <maxh@xilinx.com>");
+MODULE_DESCRIPTION("XVC Debug Register Access");
+MODULE_VERSION("0.1.0");
 
 static dev_t xvc_ioc_dev_region;
 static struct class* xvc_dev_class = NULL;
@@ -261,13 +265,6 @@ static void __exit xil_xvc_exit(void) {
 	platform_driver_unregister(&xil_xvc_plat_driver);
 	xil_xvc_cleanup();
 }
-
-MODULE_DEVICE_TABLE(of, xvc_of_ids);
-MODULE_LICENSE("GPL v2");
-MODULE_AUTHOR("Max Heimer <maxh@xilinx.com>");
-MODULE_DESCRIPTION("XVC Debug Register Access");
-MODULE_VERSION("0.1.0");
-
 
 module_init(xil_xvc_init);
 module_exit(xil_xvc_exit);
