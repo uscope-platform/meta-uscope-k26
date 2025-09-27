@@ -15,4 +15,3 @@ IMAGE_INSTALL:append = " ucube_lkm e2fsprogs parted e2fsprogs-resize2fs python3-
 LICENSE="CLOSED"
 LIC_FILES_CHKSUM=""
 
-IMAGE_CLASSES += " xilinx-bootbin"

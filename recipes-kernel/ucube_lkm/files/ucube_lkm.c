@@ -57,7 +57,7 @@ static long ucube_lkm_ioctl(struct file *filp, unsigned int cmd, unsigned long a
 static int ucube_lkm_mmap(struct file *filp, struct vm_area_struct *vma);
 static __poll_t ucube_lkm_poll(struct file *, struct poll_table_struct *);
 int ucube_lkm_probe(struct platform_device *dev);
-int ucube_lkm_remove(struct platform_device *dev);
+void ucube_lkm_remove(struct platform_device *dev);
 
 
 static dev_t device_number;
@@ -345,7 +345,7 @@ static int __init ucube_lkm_init(void) {
     }
 
     major = MAJOR(device_number);
-    uCube_class = class_create(THIS_MODULE, "uCube_scope");
+    uCube_class = class_create("uCube_scope");
     
 
     for(int i = 0; i< N_MINOR_NUMBERS; i++){
@@ -457,11 +457,11 @@ int ucube_lkm_probe(struct platform_device *pdev){
     return 0;
 }
 
-int ucube_lkm_remove(struct platform_device *pdev){
+void ucube_lkm_remove(struct platform_device *pdev){
     pr_info("%s: In platform remove\n", __func__);
     
     sysfs_remove_group(&pdev->dev.kobj, &uscope_lkm_attr_group);
-    return 0;
+    return ;
 }
 
 
