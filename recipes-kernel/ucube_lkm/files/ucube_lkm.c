@@ -81,7 +81,7 @@ static long ucube_lkm_ioctl(struct file *filp, unsigned int cmd, unsigned long a
 static int ucube_lkm_mmap(struct file *filp, struct vm_area_struct *vma);
 static __poll_t ucube_lkm_poll(struct file *, struct poll_table_struct *);
 int ucube_lkm_probe(struct platform_device *dev);
-int ucube_lkm_remove(struct platform_device *dev);
+void ucube_lkm_remove(struct platform_device *dev);
 
 
 static dev_t device_number;
@@ -197,7 +197,7 @@ static ssize_t fclk_3_show(struct device *dev, struct device_attribute *mattr, c
     }
 }
 
-ssize_t fclk_0_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t len) {
+static ssize_t fclk_0_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t len) {
     if(!dev_data->is_zynqmp){
         unsigned long freq;
         if(kstrtoul(buf, 0, &freq))
@@ -252,7 +252,7 @@ static ssize_t dma_addr_show(struct device *dev, struct device_attribute *mattr,
     return sprintf(data, "%llu\n", dev_data->physaddr);
     #else
     printk(KERN_ALERT "Hello, kernel. Unknown mode!\n");
-    return 0
+    return 0;
     #endif
 }
 
@@ -289,7 +289,7 @@ static ssize_t dma_buf_size_store(struct device *dev, struct device_attribute *a
             &dev_data->devs[0],
             dev_data->dma_buf_size,
             &(dev_data->physaddr),
-            GFP_KERNEL ||GFP_ATOMIC
+            GFP_KERNEL 
         );
 
 
@@ -308,7 +308,7 @@ static ssize_t dma_buf_size_store(struct device *dev, struct device_attribute *a
             &dev_data->devs[0],
             dev_data->dma_buf_size,
             &(dev_data->physaddr),
-            GFP_KERNEL ||GFP_ATOMIC
+            GFP_KERNEL
         );
 
         vfree(dev_data->read_data_buffer_64);
@@ -318,12 +318,12 @@ static ssize_t dma_buf_size_store(struct device *dev, struct device_attribute *a
     return len;
 }
 
-static DEVICE_ATTR(fclk_0, S_IRUGO|S_IWUSR, fclk_0_show, fclk_0_store);
-static DEVICE_ATTR(fclk_1, S_IRUGO|S_IWUSR, fclk_1_show, fclk_1_store);
-static DEVICE_ATTR(fclk_2, S_IRUGO|S_IWUSR, fclk_2_show, fclk_2_store);
-static DEVICE_ATTR(fclk_3, S_IRUGO|S_IWUSR, fclk_3_show, fclk_3_store);
-static DEVICE_ATTR(dma_addr, S_IRUGO, dma_addr_show, dma_addr_store);
-static DEVICE_ATTR(dma_buf_size, S_IRUGO|S_IWUSR, dma_buf_size_show, dma_buf_size_store);
+static DEVICE_ATTR(fclk_0, 0644, fclk_0_show, fclk_0_store);
+static DEVICE_ATTR(fclk_1, 0644, fclk_1_show, fclk_1_store);
+static DEVICE_ATTR(fclk_2, 0644, fclk_2_show, fclk_2_store);
+static DEVICE_ATTR(fclk_3, 0644, fclk_3_show, fclk_3_store);
+static DEVICE_ATTR(dma_addr, 0444, dma_addr_show, dma_addr_store);
+static DEVICE_ATTR(dma_buf_size, 0644, dma_buf_size_show, dma_buf_size_store);
 
 static struct attribute *uscope_lkm_attrs[] = {
 	&dev_attr_fclk_0.attr,
@@ -399,9 +399,8 @@ static int ucube_lkm_mmap(struct file *filp, struct vm_area_struct *vma){
     }
     switch (minor) {
         case 0:
-            return -1;
             pr_err("%s: mmapping of data memory is not supported\n", __func__);
-            break;
+            return -1;
         case 1:
             if( mapping_start_address < mapping_limit_base_0 ){
                 pr_err("%s: attempting to map memory below the control bus address range (%llx)\n", __func__, mapping_start_address);
@@ -581,7 +580,7 @@ static int __init ucube_lkm_init(void) {
     }
 
     major = MAJOR(device_number);
-    uCube_class = class_create(THIS_MODULE, "uCube_scope");
+    uCube_class = class_create("uCube_scope");
     
 
     for(int i = 0; i< N_MINOR_NUMBERS; i++){
@@ -624,7 +623,7 @@ static int __init ucube_lkm_init(void) {
             &dev_data->devs[0],
             dev_data->dma_buf_size,
             &(dev_data->physaddr),
-            GFP_KERNEL ||GFP_ATOMIC
+            GFP_KERNEL
         );
        pr_warn("%s: Allocated 32 bit dma buffer at: %llu\n", __func__, dev_data->physaddr);
     }else{
@@ -633,7 +632,7 @@ static int __init ucube_lkm_init(void) {
             &dev_data->devs[0],
             dev_data->dma_buf_size,
             &(dev_data->physaddr),
-            GFP_KERNEL ||GFP_ATOMIC
+            GFP_KERNEL
         );
         pr_warn("%s: Allocated 64 bit dma buffer at: %llu\n", __func__, dev_data->physaddr);
     }
@@ -746,11 +745,10 @@ int ucube_lkm_probe(struct platform_device *pdev){
     return 0;
 }
 
-int ucube_lkm_remove(struct platform_device *pdev){
+void ucube_lkm_remove(struct platform_device *pdev){
     pr_info("%s: In platform remove\n", __func__);
     sysfs_remove_group(&pdev->dev.kobj, &uscope_lkm_attr_group);
     of_node_put(dev_data->fpga_node);
-    return 0;
 }
 
 

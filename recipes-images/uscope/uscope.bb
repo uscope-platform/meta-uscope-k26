@@ -3,15 +3,27 @@ DESCRIPTION = "Custom image for uscope"
 
 require uscope.inc
 
-#THIS PACKAGE NEEDS TO BE REMOVED AS IT CONFLICTS WITH OPENSSH
-COMMON_FEATURES:remove = "ssh-server-dropbear"
+# Ensure Dropbear is stripped and OpenSSH is used exclusively
+IMAGE_FEATURES:remove = "ssh-server-dropbear"
+IMAGE_FEATURES:append = " ssh-server-openssh"
 
-PREFERRED_RPROVIDER:virtual/sshd = "openssh"
-PREFERRED_RPROVIDER:virtual/ssh = "openssh"
+# Install application packages
+IMAGE_INSTALL:append = " \
+    docker \
+    bootgen \
+    vim \
+    python3-pip \
+    python3-pynacl \
+    python3-cryptography \
+    python3-bcrypt \
+    vim \
+    lrzsz \
+    git \
+    avahi-daemon \
+    ucube_lkm \
+    xvc-driver \
+    open-amp \
+    packagegroup-openamp \
+    "
 
-IMAGE_INSTALL:append = " docker bootgen python3-pip python3-pynacl python3-cryptography kernel-modules vim lrzsz git openssh ssh sshd avahi-daemon"
-IMAGE_INSTALL:append = " ucube_lkm e2fsprogs parted e2fsprogs-resize2fs python3-bcrypt xvc-driver xvc-server"
-
-LICENSE="CLOSED"
-LIC_FILES_CHKSUM=""
-
+LICENSE = "CLOSED"
