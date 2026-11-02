@@ -28,4 +28,7 @@ IMAGE_INSTALL:append = " \
     docker-compose \
     "
 
+inherit extrausers
+EXTRA_USERS_PARAMS:append = " usermod -a -G docker,uscope amd-edf;"
+
 LICENSE = "CLOSED"
