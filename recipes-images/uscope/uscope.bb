@@ -23,7 +23,9 @@ IMAGE_INSTALL:append = " \
     ucube_lkm \
     xvc-driver \
     open-amp \
+    gcc-arm-none-eabi \
     packagegroup-openamp \
+    docker-compose \
     "
 
 LICENSE = "CLOSED"
