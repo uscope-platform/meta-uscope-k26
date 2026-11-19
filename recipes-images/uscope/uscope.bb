@@ -26,6 +26,8 @@ IMAGE_INSTALL:append = " \
     gcc-arm-none-eabi \
     packagegroup-openamp \
     docker-compose \
+    python3-modules \
+    python3-requests \
     "
 
 inherit extrausers

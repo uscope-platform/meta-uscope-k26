@@ -436,7 +436,6 @@ static int ucube_lkm_mmap(struct file *filp, struct vm_area_struct *vma){
 static long ucube_lkm_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
     int minor = MINOR(filp->f_inode->i_rdev);
     if(minor == 0){
-        pr_info("%s: In ioctl\n CMD: %u\n ARG: %lu\n", __func__, cmd, arg);
         switch (cmd){
         case IOCTL_NEW_DATA_AVAILABLE:
             return dev_data->new_data_available;
@@ -447,7 +446,6 @@ static long ucube_lkm_ioctl(struct file *filp, unsigned int cmd, unsigned long a
         }
         return 0;
     }else if(minor == 3){
-        pr_info("%s: In ioctl\n CMD: %u\n ARG: %lu\n", __func__, cmd, arg);
         switch (cmd){
         case IOCTL_PROGRAM_FPGA:
             pr_info("%s: FPGA BITSTREAM LENGTH: %lu\n", __func__, dev_data->bitstream_len);
@@ -756,7 +754,7 @@ MODULE_DEVICE_TABLE(of, ucube_lkm_match_table);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Filippo Savi");
 MODULE_DESCRIPTION("uScope dma handler");
-MODULE_VERSION("0.01");
+MODULE_VERSION("1.00");
 
 module_init(ucube_lkm_init);
 module_exit(ucube_lkm_exit);
