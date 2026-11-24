@@ -1,19 +1,20 @@
 SUMMARY = "ucube_lkm"
+DESCRIPTION = "Kernel driver exposing the uScope scope channels (AXI DMA), FPGA \
+programming and PL clock control to userspace."
+HOMEPAGE = "https://github.com/uscope-platform/uscope_module"
 
-LICENSE = "GPLv2"
-LIC_FILES_CHKSUM = "file://COPYING;md5=56816f07fb4e1322186fa0841a4c3f13"
+LICENSE = "GPL-2.0-only"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/GPL-2.0-only;md5=801f80980d171dd6425610833a22dbe6"
 
-inherit module
+SRC_URI = "git://github.com/uscope-platform/uscope_module.git;protocol=https;branch=main"
+SRCREV = "b28f940dbde3075773f86dd4a5ba0a5bb50e16d3"
 
-SRC_URI = "file://Makefile \
-           file://ucube_lkm.c \
-           file://COPYING \
-          "
-
-S = "${WORKDIR}"
+PV = "2.2+git"
+S = "${WORKDIR}/git/src"
 
 RPROVIDES:${PN} += "ucube_lkm"
 
+inherit module
 inherit useradd
 
 USERADD_PACKAGES = "${PN}"
