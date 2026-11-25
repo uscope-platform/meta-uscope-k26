@@ -9,6 +9,9 @@
         ucube,arch = "zynqmp";
         ucube,fclk-enable = <1 0 0 0>;   /* fclk0 on, fclk1-3 off */
         ucube,rpu-clk-enable = <1>;
+        mboxes = <&{/axi/ipi@ff340000/child@ff310000} 0>,
+                 <&{/axi/ipi@ff340000/child@ff310000} 1>;
+        mbox-names = "tx", "rx";
     };
     debug_bridge@80000000 {
         compatible = "xlnx,xvc";
@@ -17,4 +20,12 @@
         status = "okay";
         clock-names = "s_axi_aclk";
     };
+
+    remoteproc@ffe00000 {
+        r5f@0 {
+            /delete-property/ mboxes;
+            /delete-property/ mbox-names;
+        };
+    };
+
 };\
