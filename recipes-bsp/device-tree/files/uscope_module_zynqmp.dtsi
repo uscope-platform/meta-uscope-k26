@@ -4,10 +4,11 @@
         reg = <0xfffc0000 0x8000>;
         interrupts = <0 89 1>;
         interrupt-parent = <&gic>;
-        clocks = <&zynqmp_clk 71>, <&zynqmp_clk 72>, <&zynqmp_clk 73>, <&zynqmp_clk 74>;
-        clock-names = "pl0_ref", "pl1_ref", "pl2_ref", "pl3_ref";
+        clocks = <&zynqmp_clk 71>, <&zynqmp_clk 72>, <&zynqmp_clk 73>, <&zynqmp_clk 74>, <&zynqmp_clk 1>;
+        clock-names = "pl0_ref", "pl1_ref", "pl2_ref", "pl3_ref", "rpll";
         ucube,arch = "zynqmp";
         ucube,fclk-enable = <1 0 0 0>;   /* fclk0 on, fclk1-3 off */
+        ucube,rpu-clk-enable = <1>;
     };
     debug_bridge@80000000 {
         compatible = "xlnx,xvc";
