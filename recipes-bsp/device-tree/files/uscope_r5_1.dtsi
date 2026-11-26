@@ -1,0 +1,50 @@
+/*
+ * Expose RPU core 1 (R5_1) to Linux remoteproc.
+ *
+ * The lopper-generated Linux DT for k26-smk-kv-sdt-multidomain only describes
+ * r5f@0, because R5_1 belongs to its own baremetal domain there. This adds
+ * r5f@1 (split mode) with its own TCM and an 8 MB DDR region for firmware.
+ *
+ * No OpenAMP/rpmsg: no vrings, no vdev buffer, and no mboxes, so the IPI
+ * channel (APU IPI7 <-> RPU1, ipi_7_to_ipi_2) stays free for ucube_lkm.
+ * Firmware without a resource table is fine; remoteproc just loads and
+ * starts it.
+ *
+ * Memory available to R5_1 firmware (link the ELF into these only):
+ *   0x00000000  ATCM          64 KB  (R5 view; 0xffe90000 from the APU)
+ *   0x00020000  BTCM          64 KB  (R5 view; 0xffeb0000 from the APU)
+ *   0x0a000000  rproc1         8 MB  DDR code/data
+ */
+
+/ {
+	reserved-memory {
+		rproc1: rproc1@a000000 {
+			no-map;
+			reg = <0x0 0xa000000 0x0 0x800000>;
+		};
+	};
+
+	remoteproc@ffe00000 {
+		/* Split mode: each core's ATCM/BTCM at its own system address */
+		ranges = <0x0 0x0 0x0 0xffe00000 0x0 0x10000>,
+			 <0x0 0x20000 0x0 0xffe20000 0x0 0x10000>,
+			 <0x1 0x0 0x0 0xffe90000 0x0 0x10000>,
+			 <0x1 0x20000 0x0 0xffeb0000 0x0 0x10000>;
+
+		r5f@0 {
+			/delete-property/ mboxes;
+			/delete-property/ mbox-names;
+		};
+
+		r5f@1 {
+			compatible = "xlnx,zynqmp-r5f";
+			reg = <0x1 0x0 0x0 0x10000>, <0x1 0x20000 0x0 0x10000>;
+			reg-names = "atcm0", "btcm0";
+			/* PD_RPU_1, PD_R5_1_ATCM, PD_R5_1_BTCM */
+			power-domains = <&zynqmp_firmware 0x8>,
+					<&zynqmp_firmware 0x11>,
+					<&zynqmp_firmware 0x12>;
+			memory-region = <&rproc1>;
+		};
+	};
+};

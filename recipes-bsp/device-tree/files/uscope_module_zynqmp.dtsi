@@ -1,31 +1,27 @@
 / {
-    uScope@fffc0000 {
-        compatible = "ucube_lkm";
-        reg = <0xfffc0000 0x8000>;
-        interrupts = <0 89 1>;
-        interrupt-parent = <&gic>;
-        clocks = <&zynqmp_clk 71>, <&zynqmp_clk 72>, <&zynqmp_clk 73>, <&zynqmp_clk 74>, <&zynqmp_clk 1>;
-        clock-names = "pl0_ref", "pl1_ref", "pl2_ref", "pl3_ref", "rpll";
-        ucube,arch = "zynqmp";
-        ucube,fclk-enable = <1 0 0 0>;   /* fclk0 on, fclk1-3 off */
-        ucube,rpu-clk-enable = <1>;
-        mboxes = <&{/axi/ipi@ff340000/child@ff310000} 0>,
-                 <&{/axi/ipi@ff340000/child@ff310000} 1>;
-        mbox-names = "tx", "rx";
-    };
-    debug_bridge@80000000 {
-        compatible = "xlnx,xvc";
-        reg = <0x0 0x80000000 0x0 0x10000>;
-        clocks = <&zynqmp_clk 71>;
-        status = "okay";
-        clock-names = "s_axi_aclk";
-    };
+	uScope@fffc0000 {
+		compatible = "ucube_lkm";
+		reg = <0xfffc0000 0x8000>;
+		interrupts = <0 89 1>;
+		interrupt-parent = <&gic>;
+		clocks = <&zynqmp_clk 71>, <&zynqmp_clk 72>, <&zynqmp_clk 73>, <&zynqmp_clk 74>, <&zynqmp_clk 1>;
+		clock-names = "pl0_ref", "pl1_ref", "pl2_ref", "pl3_ref", "rpll";
+		ucube,arch = "zynqmp";
+		ucube,fclk-enable = <1 0 0 0>;   /* fclk0 on, fclk1-3 off */
+		ucube,rpu-clk-enable = <1>;
+		/* APU IPI7 <-> RPU0 (child@ff310000) and RPU1 (child@ff320000) */
+		mboxes = <&{/axi/ipi@ff340000/child@ff310000} 0>,
+			 <&{/axi/ipi@ff340000/child@ff310000} 1>,
+			 <&{/axi/ipi@ff340000/child@ff320000} 0>,
+			 <&{/axi/ipi@ff340000/child@ff320000} 1>;
+		mbox-names = "tx_0", "rx_0", "tx_1", "rx_1";
+	};
 
-    remoteproc@ffe00000 {
-        r5f@0 {
-            /delete-property/ mboxes;
-            /delete-property/ mbox-names;
-        };
-    };
-
-};\
+	debug_bridge@80000000 {
+		compatible = "xlnx,xvc";
+		reg = <0x0 0x80000000 0x0 0x10000>;
+		clocks = <&zynqmp_clk 71>;
+		status = "okay";
+		clock-names = "s_axi_aclk";
+	};
+};
