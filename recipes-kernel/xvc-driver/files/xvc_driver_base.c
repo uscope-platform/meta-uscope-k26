@@ -226,6 +226,7 @@ static const struct of_device_id xvc_of_ids[] = {
 	{ .compatible = DEBUG_BRIDGE_COMPAT_STRING, },
 	{}
 };
+MODULE_DEVICE_TABLE(of, xvc_of_ids);
 
 static struct platform_driver xil_xvc_plat_driver = {
 	.driver = {
