@@ -1,0 +1,60 @@
+/*
+ * RPU core 0 (R5_0) for the uScope firmware.
+ *
+ * The lopper-generated Linux DT for k26-smk-kv-sdt-multidomain sets the RPU up
+ * for OpenAMP and libmetal: an rpmsg channel for R5_0 (vdev0vring0/1,
+ * vdev0buffer), a 384 KB rproc0 ELF region, libmetal regions for R5_1
+ * (libmetal_elf/desc0/desc1/data) with UIO nodes exposing them, and the
+ * /domains description tying it together. The uScope firmware uses none of
+ * it: its doorbells are the IPI channels in uscope_module_zynqmp.dtsi and its
+ * shared memory is allocated by ucube_lkm. This removes all of it, about 1.9
+ * MB of reserved memory, and gives R5_0 an 8 MB carve-out like R5_1's.
+ *
+ * Memory available to R5_0 firmware (link the ELF into these only):
+ *   0x00000000  ATCM          64 KB  (R5 view; 0xffe00000 from the APU)
+ *   0x00020000  BTCM          64 KB  (R5 view; 0xffe20000 from the APU)
+ *   0x09800000  rproc0         8 MB  DDR code/data
+ *
+ * rproc0 keeps its base and grows to 8 MB, ending where R5_1's rproc1 starts
+ * (0x0a000000). 8 MB at 0x09800000 is aligned to its size, so the firmware can
+ * map it with one MPU region.
+ */
+
+/* The OpenAMP/libmetal description, which refers to the regions below */
+/delete-node/ &{/domains};
+
+/* rpmsg for R5_0 */
+/delete-node/ &vdev0vring0;
+/delete-node/ &vdev0vring1;
+/delete-node/ &vdev0buffer;
+
+/* libmetal for R5_1, and the UIO devices exposing it */
+/delete-node/ &libmetal_elf;
+/delete-node/ &libmetal_desc0;
+/delete-node/ &libmetal_desc1;
+/delete-node/ &libmetal_data;
+/delete-node/ &libmetal_uio_desc099c8000;
+/delete-node/ &libmetal_uio_desc199cc000;
+/delete-node/ &libmetal_uio_data99d0000;
+
+&rproc0 {
+	reg = <0x0 0x9800000 0x0 0x800000>;
+};
+
+&{/remoteproc@ffe00000/r5f@0} {
+	memory-region = <&rproc0>;
+};
+
+/* lopper writes __symbols__ into the source: drop the deleted nodes' entries */
+&{/__symbols__} {
+	/delete-property/ vdev0vring0;
+	/delete-property/ vdev0vring1;
+	/delete-property/ vdev0buffer;
+	/delete-property/ libmetal_elf;
+	/delete-property/ libmetal_desc0;
+	/delete-property/ libmetal_desc1;
+	/delete-property/ libmetal_data;
+	/delete-property/ libmetal_uio_desc099c8000;
+	/delete-property/ libmetal_uio_desc199cc000;
+	/delete-property/ libmetal_uio_data99d0000;
+};
